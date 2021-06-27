@@ -10,4 +10,4 @@ NUM_THREAD = os.environ.get('NUM_THREAD', 4)
 
 if __name__ == '__main__':
     queue.start()
-    serve(app, host=HOST, port=PORT, threads=NUM_THREAD)
+    serve(app, host=HOST, port=PORT, threads=int(NUM_THREAD))
