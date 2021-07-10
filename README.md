@@ -28,26 +28,6 @@ docker run  \
   wg
 ```
 
-### API Usage
-> Replace `wg0` with your interface name
-1. Get list of peers
-```shell
-curl --request GET \
-  --url http://localhost:8000/wg0/peer/list
-```
-
-2. Register new peer
-```shell
-curl --request POST \
-  --url http://localhost:8000/wg0/peer/register
-```
-
-3. Remove a peer
-```shell
-curl --request DELETE \
-  --url 'http://localhost:8000/wg0/peer?key=<Peer Public Key>
-```
-
 ### References
 1. https://github.com/WireGuard
 2. https://hub.docker.com/r/linuxserver/wireguard
