@@ -1,7 +1,7 @@
 import os
 import tempfile
 import uuid
-from typing import List
+from typing import List, Dict
 
 from .executor import execute
 from .models import PeerUsage, KeyPair
@@ -31,16 +31,16 @@ def create_keypair() -> KeyPair:
     return KeyPair(public_key, private_key)
 
 
-def get_peer_ips(interface: str) -> List[str]:
+def get_peer_ips(interface: str) -> Dict[str, str]:
     output, _ = execute(f'wg show {interface} allowed-ips')
-    data = []
+    data = {}
     if output and len(output) > 0:
         for line in output.split('\n'):
             l = line.split('\t')
             if len(l) != 2:
                 continue
             peer, ip = l[0], l[1]
-            data.append(ip[:ip.index('/')])
+            data[peer] = ip[:ip.index('/')]
     return data
 
 

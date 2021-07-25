@@ -53,7 +53,7 @@ def remove_peer(interface):
     })
 
 
-@app.route('/<interface>/peer/list', methods=["GET"])
+@app.route('/<interface>/list_peer', methods=["GET"])
 def list_peer(interface):
     peers = dumps(interface)
     return jsonify({

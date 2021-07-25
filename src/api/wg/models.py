@@ -2,8 +2,8 @@ from typing import Optional, NamedTuple
 
 
 class KeyPair(NamedTuple):
-    public: str
-    private: str
+    public_key: str
+    private_key: str
 
 
 class PeerUsage(NamedTuple):

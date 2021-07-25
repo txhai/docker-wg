@@ -1,4 +1,11 @@
+import json
+
 from .wg import *
+
+
+from .logger import Logger, DEBUG
+
+logger = Logger('wg', DEBUG)
 
 
 class Action:
@@ -18,7 +25,10 @@ class Action:
 
 def add_peer(interface, public_key) -> str:
     ips = get_peer_ips(interface)
-    _ip = get_available_ip(ips)
+    # logger.info(ips)
+    # logger.info(json.dumps({'str': public_key}))
+    # logger.info(json.dumps({'str': public_key.strip()}))
+    _ip = ips[public_key] if public_key in ips else get_available_ip(list(ips.values()))
 
     # create peer config
     config = '[Peer]\n' \
@@ -35,10 +45,10 @@ def add_peer(interface, public_key) -> str:
 def create_peer(interface):
     keypair = create_keypair()
     # add peer
-    _ip = add_peer(interface, keypair.public)
+    _ip = add_peer(interface, keypair.public_key)
     return {
-        "private_key": keypair.private,
-        "public_key": keypair.public,
+        "private_key": keypair.private_key,
+        "public_key": keypair.public_key,
         "ip": _ip
     }
 
