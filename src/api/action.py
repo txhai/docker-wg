@@ -38,6 +38,7 @@ def add_peer(interface, public_key) -> str:
     # add to wireguard
     add_conf(interface, config)
     save_conf(interface)
+    ip_route_add(interface, f'{_ip}/32')
 
     return _ip
 
