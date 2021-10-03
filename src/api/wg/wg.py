@@ -82,3 +82,13 @@ def dumps(interface) -> List[PeerUsage]:
             persistent_keepalive=__parse_val(l[7]))
         peers.append(peer)
     return peers
+
+
+def is_link_up(interface):
+    try:
+        fo = open(f'/sys/class/net/{interface}/carrier', 'r')
+        fo.read().strip()
+        fo.close()
+    except (FileNotFoundError, OSError):
+        return False
+    return True

@@ -59,3 +59,10 @@ def list_peer(interface):
     return jsonify({
         'peers': [p.to_dict() for p in peers]
     })
+
+
+@app.route('/<interface>/healthcheck', methods=["GET"])
+def health_check(interface):
+    is_up = wg.is_link_up(interface)
+    status = {interface: {'is_up': is_up}}
+    return jsonify(status), 200 if is_up else 503
