@@ -1,7 +1,7 @@
 import os
 import tempfile
 import uuid
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from .executor import execute
 from .models import PeerUsage, KeyPair
@@ -29,6 +29,12 @@ def create_keypair() -> KeyPair:
         os.remove(private_key_path)
         os.remove(public_key_path)
     return KeyPair(public_key, private_key)
+
+
+def get_server_public_key(interface: str) -> Optional[str]:
+    output, _ = execute(f'wg show {interface} public-key')
+    if output and len(output.strip()) > 0:
+        return next((line for line in map(str.strip, output.strip().split('\n')) if len(line) > 0), None)
 
 
 def get_peer_ips(interface: str) -> Dict[str, str]:

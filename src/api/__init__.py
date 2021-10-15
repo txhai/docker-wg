@@ -5,13 +5,18 @@ from flask import Flask, jsonify, request
 from .action import Action
 from .queue import Queue
 from .task import Task
-from .wg import dumps
+from .wg import dumps, is_link_up, get_server_public_key
 
 app = Flask(__name__)
 queue = Queue()
 
 
 # We put registering peer, and removing peer in a queue to keep WireGuard configs consistently
+@app.route('/<interface>/server_key', methods=["GET"])
+def server_public_key(interface):
+    public_key = get_server_public_key(interface)
+    return jsonify({'public_key': public_key})
+
 
 @app.route('/<interface>/new_peer', methods=["POST"])
 def new_peer(interface):
@@ -63,6 +68,6 @@ def list_peer(interface):
 
 @app.route('/<interface>/healthcheck', methods=["GET"])
 def health_check(interface):
-    is_up = wg.is_link_up(interface)
+    is_up = is_link_up(interface)
     status = {interface: {'is_up': is_up}}
     return jsonify(status), 200 if is_up else 503
