@@ -1,33 +1,71 @@
 package main
 
 import (
-	"encoding/binary"
+	"docker_wg/api"
+	"docker_wg/loggin"
 	"fmt"
+	"github.com/gorilla/mux"
 	"log"
-	"net"
+	"net/http"
+	"os"
+	"time"
 )
 
+const (
+	EnvSubnet = "INTERNAL_SUBNET"
+	EnvHost   = "HOST"
+	EnvPort   = "PORT"
+)
+
+const (
+	contentTypeHeader = "Content-Type"
+	contentTypeJSON   = "application/json"
+)
+
+func jsonMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add(contentTypeHeader, contentTypeJSON)
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
-	// convert string to IPNet struct
-	_, ipv4Net, err := net.ParseCIDR("10.13.1.8/25")
+	// get env variables
+	host := os.Getenv(EnvHost)
+	port := os.Getenv(EnvPort)
+	subnet := os.Getenv(EnvSubnet)
+
+	// create logger
+	logger := loggin.NewLogger(loggin.LevelVerbose)
+
+	var err error
+
+	// create api
+	handler, err := api.NewApi(subnet, logger)
 	if err != nil {
-		log.Fatal(err)
+		log.Panicf("create api handler %v", err)
+		return
 	}
 
-	// convert IPNet struct mask and address to uint32
-	// network is BigEndian
-	mask := binary.BigEndian.Uint32(ipv4Net.Mask)
-	start := binary.BigEndian.Uint32(ipv4Net.IP)
+	// create http server
+	router := mux.NewRouter()
+	router.Use(jsonMiddleware)
+	router.HandleFunc("/{itf}/server_key", handler.ServerKeyHandler).Methods("GET")
+	router.HandleFunc("/{itf}/add_peer", handler.AddPeerHandler).Methods("POST")
+	router.HandleFunc("/{itf}/remove_peer", handler.RemovePeerHandler).Methods("DELETE")
+	router.HandleFunc("/{itf}/list_peer", handler.ListPeerHandler).Methods("GET")
+	router.HandleFunc("/{itf}/healthcheck", handler.HealthCheckHandler).Methods("GET")
 
-	// find the final address
-	finish := (start & mask) | (mask ^ 0xffffffff)
-
-	// loop through addresses as uint32
-	for i := start; i <= finish; i++ {
-		// convert back to net.IP
-		ip := make(net.IP, 4)
-		binary.BigEndian.PutUint32(ip, i)
-		fmt.Println(ip)
+	server := &http.Server{
+		Handler: router,
+		Addr:    fmt.Sprintf("%s:%s", host, port),
+		// Good practice: enforce timeouts for servers you create!
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
 	}
-
+	err = server.ListenAndServe()
+	if err != nil {
+		log.Panicf("listen and serve %v", err)
+		return
+	}
 }

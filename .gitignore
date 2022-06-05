@@ -46,3 +46,4 @@ go.work
 *.configs.json
 configs/
 build/
+/bin
