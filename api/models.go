@@ -9,7 +9,3 @@ type peerUsage struct {
 	Tx                  int64  `json:"tx"`
 	PersistentKeepAlive string `json:"persistent_keepalive"`
 }
-
-type peersUsage struct {
-	Peers []peerUsage `json:"peers"`
-}

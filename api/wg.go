@@ -52,13 +52,14 @@ func (wg *wireguard) addConf(itf string, conf string) error {
 	return nil
 }
 
-func (wg *wireguard) removeConf(itf string, publicKey string) {
+func (wg *wireguard) removeConf(itf string, publicKey string) error {
 	wg.Lock()
 	defer wg.Unlock()
 	if err := execCmd("wg set %s peer %s remove", itf, publicKey); err != nil {
-		wg.api.log.Errorf("remove conf (%s, %s) exec %v", itf, publicKey, err)
+		return fmt.Errorf("remove conf (%s, %s) exec %v", itf, publicKey, err)
 	}
 	wg.api.log.Printf("remove conf success")
+	return nil
 }
 
 func (wg *wireguard) getPublicKey(itf string) (string, error) {
@@ -66,14 +67,14 @@ func (wg *wireguard) getPublicKey(itf string) (string, error) {
 	defer wg.Unlock()
 	output, err := execCmdGetOutput("wg show %s public-key", itf)
 	if err != nil {
-		return "", fmt.Errorf("wg show %s public-key - exec %v", itf, err)
+		return "", fmt.Errorf("[wg show %s public-key] - exec %v", itf, err)
 	}
 	for _, s := range strings.Split(output, "\n") {
 		if strings.TrimSpace(s) != "" {
 			return s, nil
 		}
 	}
-	return "", fmt.Errorf("wg show %s public-key - empty output", itf)
+	return "", fmt.Errorf("[wg show %s public-key] - empty output", itf)
 }
 
 func (wg *wireguard) getPeerIPs(itf string) ([]net.IP, error) {
@@ -81,7 +82,7 @@ func (wg *wireguard) getPeerIPs(itf string) ([]net.IP, error) {
 	defer wg.Unlock()
 	output, err := execCmdGetOutput("wg show %s allowed-ips", itf)
 	if err != nil {
-		return nil, fmt.Errorf("wg.getPeerIPs(%s) - exec %v", itf, err)
+		return nil, fmt.Errorf("[wg show %s allowed-ips] - exec %v", itf, err)
 	}
 	var ips = make([]net.IP, 0)
 	lines := strings.Split(output, "\n")
@@ -104,7 +105,7 @@ func (wg *wireguard) dumps(itf string) ([]peerUsage, error) {
 	defer wg.Unlock()
 	output, err := execCmdGetOutput("wg show %s dump", itf)
 	if err != nil {
-		return nil, fmt.Errorf("wg.dumps(%s) - exec %v", itf, err)
+		return nil, fmt.Errorf("[wg show %s dump] - exec %v", itf, err)
 	}
 	var peers = make([]peerUsage, 0)
 	for _, line := range strings.Split(output, "\n") {

@@ -50,16 +50,16 @@ func main() {
 	// create http server
 	router := mux.NewRouter()
 	router.Use(jsonMiddleware)
+	router.UseEncodedPath()
 	router.HandleFunc("/{itf}/server_key", handler.ServerKeyHandler).Methods("GET")
 	router.HandleFunc("/{itf}/add_peer", handler.AddPeerHandler).Methods("POST")
-	router.HandleFunc("/{itf}/remove_peer", handler.RemovePeerHandler).Methods("DELETE")
+	router.HandleFunc("/{itf}/remove_peer", handler.RemovePeerHandler).Methods("DELETE").Queries("key", "{key}")
 	router.HandleFunc("/{itf}/list_peer", handler.ListPeerHandler).Methods("GET")
 	router.HandleFunc("/{itf}/healthcheck", handler.HealthCheckHandler).Methods("GET")
 
 	server := &http.Server{
-		Handler: router,
-		Addr:    fmt.Sprintf("%s:%s", host, port),
-		// Good practice: enforce timeouts for servers you create!
+		Handler:      router,
+		Addr:         fmt.Sprintf("%s:%s", host, port),
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
