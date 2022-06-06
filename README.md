@@ -22,6 +22,8 @@ docker run  \
   -e PEERDNS=auto \
   -e INTERNAL_SUBNET=10.13.13.0/24 \
   -e ALLOWEDIPS=0.0.0.0/0 \
+  -e HOST=0.0.0.0 \
+  -e PORT=8000 \
   -p 51820:51820/udp \
   -p 8000:8000 \
   --name wg \
