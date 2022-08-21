@@ -6,6 +6,6 @@ ADD . /app
 WORKDIR /app
 RUN GOOS=${GOOS} GOARCH=${GOARCH} go build -v -o /app/bin/api /app/main.go
 
-FROM ghcr.io/linuxserver/wireguard
+FROM ghcr.io/txhai/docker-wireguard:latest
 COPY --from=build /app/bin/ /bin/
 CMD ["api"]
