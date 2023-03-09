@@ -17,9 +17,10 @@ type Api struct {
 	log             *loggin.Logger
 	peerMutex       sync.Mutex
 	findAvailableIp func(ips []net.IP) string
+	keepAlive       string
 }
 
-func NewApi(subnet string, logger *loggin.Logger) (*Api, error) {
+func NewApi(subnet string, keepAlive string, logger *loggin.Logger) (*Api, error) {
 	_, ipNet, err := net.ParseCIDR(subnet)
 	if err != nil {
 		return nil, fmt.Errorf("net.ParseCIDR %v", err)
@@ -46,6 +47,7 @@ func NewApi(subnet string, logger *loggin.Logger) (*Api, error) {
 		return ""
 	}
 	api := new(Api)
+	api.keepAlive = keepAlive
 	api.log = logger
 	api.findAvailableIp = findAvailableIpFunc
 	api.initWgApi()
@@ -97,7 +99,7 @@ func (api *Api) AddPeerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// build & add peer conf
-	conf := fmt.Sprintf("[Peer]\nPublicKey = %s\nAllowedIPs = %s/32\n", peerPublicKey, availableIp)
+	conf := fmt.Sprintf("[Peer]\nPublicKey = %s\nAllowedIPs = %s/32\nPersistentKeepalive = %s\n", peerPublicKey, availableIp, api.keepAlive)
 	err = wg.addConf(itf, conf)
 	if err != nil {
 		responseError(w, http.StatusInternalServerError, fmt.Errorf("addConf %v", err))

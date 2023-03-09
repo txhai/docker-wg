@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	EnvSubnet = "INTERNAL_SUBNET"
-	EnvHost   = "HOST"
-	EnvPort   = "PORT"
+	EnvHost      = "HOST"
+	EnvPort      = "PORT"
+	EnvSubnet    = "INTERNAL_SUBNET"
+	EnvKeepAlive = "KEEP_ALIVE"
 )
 
 const (
@@ -34,6 +35,11 @@ func main() {
 	host := os.Getenv(EnvHost)
 	port := os.Getenv(EnvPort)
 	subnet := os.Getenv(EnvSubnet)
+	keepAlive := os.Getenv(EnvKeepAlive)
+
+	if keepAlive == "" {
+		keepAlive = "0"
+	}
 
 	// create logger
 	logger := loggin.NewLogger(loggin.LevelVerbose)
@@ -41,7 +47,7 @@ func main() {
 	var err error
 
 	// create api
-	handler, err := api.NewApi(subnet, logger)
+	handler, err := api.NewApi(subnet, keepAlive, logger)
 	if err != nil {
 		log.Panicf("create api handler %v", err)
 		return
